@@ -118,6 +118,10 @@
                 return response.json();
             })
             .then(data => {
+                if(data.token){
+                  oksetCookie("token", '', 0);
+                  botadmin = '';
+                }
                 updateSelect(data.group);
                 document.getElementById('groupcount').innerHTML = data.count;
             })
@@ -134,6 +138,10 @@
                 return response.json();
             })
             .then(data => {
+                if(data.token){
+                  oksetCookie("token", '', 0);
+                  botadmin = '';
+                }
                 updateSelect(data.group);
                 document.getElementById('groupcount').innerHTML = data.count;
             })
