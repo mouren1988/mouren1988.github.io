@@ -118,80 +118,68 @@ emailEl.addEventListener('input', () => {
     }
 })
 
+// (★) 请将此段代码粘贴到 botscript.js 和 script.js 中
+// (★) 替换掉原来的 submitBtn.addEventListener... 整段
+
 submitBtn.addEventListener('click', () => {
+    // (★) 替换成您服务器的公网 IP 和端口
+    const MY_API_SERVER = "http://http://138.2.121.84:8000"; 
+
     if (emailValid && checkboxEl.checked && nameValid && sprayRepeatCounter > 1) {
-    	const checkbox = document.getElementById('subscribe');
-    	if(nametxt.length < 5){
+        const checkbox = document.getElementById('subscribe');
+        if(nametxt.length < 5){
            alert('密码错误');
            checkbox.click();
            return
-    	}
-        let okgeturi = false; 
-        var okgetok = 0; 
-        var mygeturi = window.location.search; 
-        const apiUrl = 'https://bot.letsvpn.bet/botWeb/group/'+mygeturi+'&code='+nametxt;
+        }
+
+        var mygeturi = window.location.search; // (例如 ?id=...)
+
+        // (★) 关键：从 JS 文件名中动态判断路径
+        // (这段代码可以同时用于 botscript.js 和 script.js)
+        var apiPath = "botWeb"; // 默认
+        if (document.currentScript && document.currentScript.src.includes("script.js")) {
+            apiPath = "jzWeb";
+        }
+
+        // (★) 组装我们自己的 API 地址
+        const apiUrl = `${MY_API_SERVER}/${apiPath}/group/${mygeturi}&code=${nametxt}`;
+
+        console.log("正在调用 API: ", apiUrl); // (方便您调试)
+
         fetch(apiUrl)
             .then(response => {
                 if (!response.ok) {
-                    okgeturi = true;
                     throw new Error('Network response was not ok');
                 }
-                
                 return response.json(); 
             })
             .then(data => {
                 if(data.ok == true){
+                  // (★) API 验证成功
+                  // (★) 这里的逻辑与原始文件 保持一致
                   if(nametxt.length == 32){
                      oksetCookie("token", nametxt, 300);
-                      var okayuri = 'allBot/'+mygeturi;
+                     var okayuri = (apiPath === "botWeb") ? 'allBot/' : 'allWeb/';
+                     okayuri += mygeturi;
                   }else{
                     oksetCookie("codekey", nametxt, 300);
-                      var okayuri = 'botWeb/'+mygeturi;
+                     var okayuri = (apiPath === "botWeb") ? 'botWeb/' : 'jzWeb/';
+                     okayuri += mygeturi;
                   }
-                  tokengood(okayuri);
+                  tokengood(okayuri); // (★) 调用跳转函数
                 }else{
-                  alert('密码错误');
+                  alert('密码错误 (或 API 验证失败)');
                   checkbox.click();
                   return;
-            	}
-            })
-            .catch(error => {
-                okgeturi = true;
-            });
-        if(okgeturi){
-        	okgeturi = false; 
-            const apiUrl2 = 'https://api.letsvpn.bet/botWeb/group/'+mygeturi+'&code='+nametxt;
-            fetch(apiUrl2)
-            .then(response => {
-                if (!response.ok) {
-                    okgeturi = true;
-                    throw new Error('Network response was not ok');
                 }
-                return response.json();
-            })
-            .then(data => {
-                if(data.ok == true){
-                  if(nametxt.length == 32){
-                     oksetCookie("token", nametxt, 300);
-                      var okayuri = 'allBot/'+mygeturi;
-                  }else{
-                    oksetCookie("codekey", nametxt, 300);
-                      var okayuri = 'botWeb/'+mygeturi;
-                  }
-                  tokengood(okayuri);
-                }else{
-                  alert('密码错误');
-                  checkbox.click();
-                  return;
-            	}
             })
             .catch(error => {
-                alert('请稍后再登录');
-                  checkbox.click();
-                  return;
+                console.error("API 调用失败:", error);
+                alert('请稍后再登录 (API 无法连接)');
+                checkbox.click();
+                return;
             });
-        }
-        
     }
 })
 function tokengood(e) {
