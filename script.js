@@ -119,9 +119,11 @@ emailEl.addEventListener('input', () => {
 })
 
 
+// (★) 替换 script.js 和 botscript.js 中的 submitBtn.addEventListener...
+
 submitBtn.addEventListener('click', () => {
     // (★) 替换成您服务器的公网 IP 和端口
-    const MY_API_SERVER = "http://http://138.2.121.84:8000"; 
+    const MY_API_SERVER = "http://<您服务器的公网IP>:8000"; 
 
     if (emailValid && checkboxEl.checked && nameValid && sprayRepeatCounter > 1) {
         const checkbox = document.getElementById('subscribe');
@@ -133,35 +135,28 @@ submitBtn.addEventListener('click', () => {
 
         var mygeturi = window.location.search; // (例如 ?id=...)
 
-        // (★) 关键：从 JS 文件名中动态判断路径
-        // (这段代码可以同时用于 botscript.js 和 script.js)
-        var apiPath = "botWeb"; // 默认
+        // (★) 动态判断路径
+        var apiPath = "botWeb"; // 默认 (用于 botscript.js)
         if (document.currentScript && document.currentScript.src.includes("script.js")) {
-            apiPath = "jzWeb";
+            apiPath = "jzWeb"; // (用于 script.js)
         }
 
         // (★) 组装我们自己的 API 地址
         const apiUrl = `${MY_API_SERVER}/${apiPath}/group/${mygeturi}&code=${nametxt}`;
 
-        console.log("正在调用 API: ", apiUrl); // (方便您调试)
+        console.log("正在调用登录 API: ", apiUrl); // (方便您调试)
 
         fetch(apiUrl)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json(); 
-            })
+            .then(response => response.json()) // (★) 确保解析 JSON
             .then(data => {
                 if(data.ok == true){
                   // (★) API 验证成功
-                  // (★) 这里的逻辑与原始文件 保持一致
                   if(nametxt.length == 32){
                      oksetCookie("token", nametxt, 300);
                      var okayuri = (apiPath === "botWeb") ? 'allBot/' : 'allWeb/';
                      okayuri += mygeturi;
                   }else{
-                    oksetCookie("codekey", nametxt, 300);
+                    oksetCookie("codekey", nametxt, 300); // (★) JS 在这里设置了 Cookie
                      var okayuri = (apiPath === "botWeb") ? 'botWeb/' : 'jzWeb/';
                      okayuri += mygeturi;
                   }
@@ -180,115 +175,6 @@ submitBtn.addEventListener('click', () => {
             });
     }
 })
-function tokengood(e) {
-         setTimeout(function() {
-              window.location.href = 'https://jzusdt.github.io/'+e;
-           }, 1000);
-        gsap.to("svg > *", {
-            duration: .1,
-            opacity: 0,
-            stagger: {
-                each: 0.03,
-                from: 'random',
-                ease: 'none',
-            }
-        })
-        gsap.to(".form-row", {
-            delay: .4,
-            duration: .1,
-            opacity: 0,
-            stagger: .1
-        })
-}
-function okgetCookie(name) {
-      const nameEQ = name + "=";
-      const ca = document.cookie.split(';');
-      for (let i = 0; i < ca.length; i++) {
-        let c = ca[i];
-        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-      }
-      return null; // 如果没有找到 cookie，返回 null
-}
-function oksetCookie(name, value, days) {
-    let expires = "";
-    if (days) {
-        const date = new Date();
-        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-        expires = "; expires=" + date.toUTCString();
-    }
-    document.cookie = name + "=" + (value || "") + expires + "; path=/";
-}
-function layoutPreparation() {
-    gsap.set(pullSystemContainer, {
-        x: 375,
-        y: 646
-    })
-    gsap.set(sprayHandContainer, {
-        x: 700,
-        y: 621
-    })
-    gsap.set(sprayer, {
-        x: -59.5,
-        y: 53
-    })
-    gsap.set(carContainer, {
-        x: 190,
-        y: 802,
-    })
-    gsap.set(scalesContainer, {
-        x: 170,
-        y: 710,
-    })
-    gsap.set(grabbingHand, {
-        x: 297,
-        y: 830
-    })
-    gsap.set(grabbingHandClosedFingers, {
-        opacity: 0
-    })
-    gsap.set(spiralContainer, {
-        x: 305,
-        y: 435,
-        svgOrigin: "14 14",
-        scaleX: -1,
-    })
-    gsap.set(weightBigContainer, {
-        x: 305,
-        y: 435,
-    })
-    gsap.set(submitBtn, {
-        color: "rgba(0, 0, 0, " + 0 + ")"
-    })
-    gsap.set([sprayLines, sprayBubbles], {
-        opacity: 0
-    })
-    gsap.set(timingChains[0], {
-        attr: {
-            "stroke-width": "5",
-            "stroke-dasharray": "0 12",
-        }
-    })
-    gsap.set(timingChains[1], {
-        attr: {
-            "stroke-width": "5",
-            "stroke-dasharray": "0 12",
-        }
-    })
-    gsap.set(checkboxPullLine, {
-        attr: {
-            y1: -105,
-            y2: 44
-        }
-    });
-    gsap.set(submitBtn, {
-        transformOrigin: "100% 0%",
-        rotation: -90
-    })
-    gsap.set(checkboxPullCircle, {
-        y: 44
-    });
-}
 
 function updateSpiralPath(centerX, centerY, radius, coils, points, offset) {
     let path = "";
