@@ -118,12 +118,11 @@ emailEl.addEventListener('input', () => {
     }
 })
 
-// (★) 请将此段代码粘贴到 botscript.js 和 script.js 中
-// (★) 替换掉原来的 submitBtn.addEventListener... 整段
+// (★) 替换 script.js 和 botscript.js 中的 submitBtn.addEventListener...
 
 submitBtn.addEventListener('click', () => {
     // (★) 替换成您服务器的公网 IP 和端口
-    const MY_API_SERVER = "http://http://138.2.121.84:8000"; 
+    const MY_API_SERVER = "http://<您服务器的公网IP>:8000"; 
 
     if (emailValid && checkboxEl.checked && nameValid && sprayRepeatCounter > 1) {
         const checkbox = document.getElementById('subscribe');
@@ -135,35 +134,28 @@ submitBtn.addEventListener('click', () => {
 
         var mygeturi = window.location.search; // (例如 ?id=...)
 
-        // (★) 关键：从 JS 文件名中动态判断路径
-        // (这段代码可以同时用于 botscript.js 和 script.js)
-        var apiPath = "botWeb"; // 默认
+        // (★) 动态判断路径
+        var apiPath = "botWeb"; // 默认 (用于 botscript.js)
         if (document.currentScript && document.currentScript.src.includes("script.js")) {
-            apiPath = "jzWeb";
+            apiPath = "jzWeb"; // (用于 script.js)
         }
 
         // (★) 组装我们自己的 API 地址
         const apiUrl = `${MY_API_SERVER}/${apiPath}/group/${mygeturi}&code=${nametxt}`;
 
-        console.log("正在调用 API: ", apiUrl); // (方便您调试)
+        console.log("正在调用登录 API: ", apiUrl); // (方便您调试)
 
         fetch(apiUrl)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json(); 
-            })
+            .then(response => response.json()) // (★) 确保解析 JSON
             .then(data => {
                 if(data.ok == true){
                   // (★) API 验证成功
-                  // (★) 这里的逻辑与原始文件 保持一致
                   if(nametxt.length == 32){
                      oksetCookie("token", nametxt, 300);
                      var okayuri = (apiPath === "botWeb") ? 'allBot/' : 'allWeb/';
                      okayuri += mygeturi;
                   }else{
-                    oksetCookie("codekey", nametxt, 300);
+                    oksetCookie("codekey", nametxt, 300); // (★) JS 在这里设置了 Cookie
                      var okayuri = (apiPath === "botWeb") ? 'botWeb/' : 'jzWeb/';
                      okayuri += mygeturi;
                   }
